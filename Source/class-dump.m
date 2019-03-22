@@ -1,7 +1,7 @@
 // -*- mode: ObjC -*-
 
 /*************************************************
-  Copyright 2016-2017 PreEmptive Solutions, LLC
+  Copyright 2016-2018 PreEmptive Solutions, LLC
   See LICENSE.txt for licensing information
 *************************************************/
   
@@ -441,7 +441,11 @@ int main(int argc, char *argv[])
                 terminateWithError(1, "Error: %s", [[error localizedFailureReason] UTF8String]);
             }
 
-            [classDump processObjectiveCData];
+            int result = [classDump processObjectiveCData];
+            if (result != 0) {
+                // errors already reported
+                exit(result);
+            }
             [classDump registerTypes];
             NSArray<NSString *> *classFilters
                     = assembleClassFilters(classDump, commandLineClassFilters);

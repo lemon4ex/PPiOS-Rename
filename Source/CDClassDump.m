@@ -1,7 +1,7 @@
 // -*- mode: ObjC -*-
 
 /*************************************************
-  Copyright 2016-2017 PreEmptive Solutions, LLC
+  Copyright 2016-2018 PreEmptive Solutions, LLC
   See LICENSE.txt for licensing information
 *************************************************/
   
@@ -214,7 +214,13 @@ static NSDictionary<NSValue *, NSArray<NSValue *> *> *supportedArches = nil;
             for (CDLoadCommand *loadCommand in [machOFile loadCommands]) {
                 if ([loadCommand isKindOfClass:[CDLCDylib class]]) {
                     CDLCDylib *dylibCommand = (CDLCDylib *)loadCommand;
-                    if ([dylibCommand cmd] == LC_LOAD_DYLIB) {
+                    int command = [dylibCommand cmd];
+
+                    // More commands may need to be added to this list as the SDKs that ship with Xcode change, but for
+                    // now this should be sufficient.
+                    if ((command == LC_LOAD_DYLIB)
+                            || (command == LC_REEXPORT_DYLIB)
+                            || (command == LC_LOAD_WEAK_DYLIB)) {
                         [self.searchPathState pushSearchPaths:[machOFile runPaths]];
                         {
                             NSString *loaderPathPrefix = @"@loader_path";
@@ -249,13 +255,18 @@ static NSDictionary<NSValue *, NSArray<NSValue *> *> *supportedArches = nil;
 
 #pragma mark -
 
-- (void)processObjectiveCData;
+- (int)processObjectiveCData;
 {
     for (CDMachOFile *machOFile in self.machOFiles) {
         CDObjectiveCProcessor *processor = [[[machOFile processorClass] alloc] initWithMachOFile:machOFile];
-        [processor process];
+        int result = [processor process];
+        if (result != 0) {
+            return result;
+        }
         [_objcProcessors addObject:processor];
     }
+    
+    return 0;
 }
 
 // This visits everything segment processors, classes, categories.  It skips over modules.  Need something to visit modules so we can generate separate headers.
@@ -265,9 +276,6 @@ static NSDictionary<NSValue *, NSArray<NSValue *> *> *supportedArches = nil;
 
     NSEnumerator *objcProcessors;
     objcProcessors = [self.objcProcessors reverseObjectEnumerator];
-
-
-
 
     for (CDObjectiveCProcessor *processor in objcProcessors) {
         [processor recursivelyVisit:visitor];
@@ -299,7 +307,10 @@ static NSDictionary<NSValue *, NSArray<NSValue *> *> *supportedArches = nil;
             //NSLog(@"Did not find it.");
         }
     } else if (self.sdkRoot != nil) {
-        adjustedName = [self.sdkRoot stringByAppendingPathComponent:name];
+        NSString *pathInSDK = [self.sdkRoot stringByAppendingPathComponent:name];
+        
+        // Some libraries cannot be provided by the SDK, they must come from the host system.
+        adjustedName = [[NSFileManager defaultManager] fileExistsAtPath:pathInSDK] ? pathInSDK : name;
     } else {
         adjustedName = name;
     }

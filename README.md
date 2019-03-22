@@ -1,7 +1,7 @@
 PreEmptive Protection for iOS - Rename
 ======================================
 
-*PreEmptive Protection for iOS - Rename*, or *PPiOS-Rename* for short, is a command line utility for obfuscating Objective-C class, protocol, property, and methods names, in iOS apps. It is a fork of [iOS-Class-Guard](https://github.com/Polidea/ios-class-guard) from [Polidea](https://www.polidea.com/), with extensive improvements and modifications.
+*PreEmptive Protection for iOS - Rename*, or *PPiOS-Rename* for short, is a tool for obfuscating Objective-C class, protocol, property, and methods names, in iOS apps. It is a fork of [iOS-Class-Guard](https://github.com/Polidea/ios-class-guard) from [Polidea](https://www.polidea.com/), with extensive improvements and modifications.
 
 *PPiOS-Rename* works by generating a special set of `#define` statements (e.g. `#define createArray y09FzL7T`) that automatically rename symbols during compilation. It includes a number of features:
 
@@ -10,8 +10,6 @@ PreEmptive Protection for iOS - Rename
 * Translate an obfuscated crash dump back to unobfuscated names
 
 *PPiOS-Rename* works with more than just your project's code. It also automatically finds symbols to exclude from renaming by looking at all external/dependent frameworks and in Core Data (xcdatamodel) files. The renamed symbols will also be applied to your XIB/Storyboard files, and to any open-source CocoaPods libraries in your project.
-
-[PreEmptive Solutions](https://www.preemptive.com/) also offers another product, [PreEmptive Protection for iOS - Control Flow](https://www.preemptive.com/products/ppios), that includes additional obfuscation transforms. *PPiOS-Rename* is meant to work alongside *PPiOS-ControlFlow*; together they provide much better protection than either one alone can provide.
 
 *PPiOS-Rename* is licensed under the GNU GPL v2, but commercial support is also available from [PreEmptive Solutions](https://www.preemptive.com/contact/contactus) via a commercial support agreement. Please see LICENSE.txt for details.
 
@@ -47,15 +45,16 @@ Supported Platforms
 
 *PPiOS-Rename* supports apps developed for:
 
-* iOS 9, iOS 10, iOS 11
+* iOS 10, iOS 11, iOS 12
 * iPhone, iPod touch, and iPad
 * ARM 32-bit, ARM 64-bit, and x86 Simulator
 
 Using:
 
-* Xcode 8, Xcode 9
-* OS X El Capitan, macOS Sierra
+* Xcode 9, Xcode 10
 * Objective-C
+
+> Note: Swift is not supported by *PPiOS-Rename*. *PPiOS-Rename* **does not work** on projects with **any** Swift code.
 
 
 Installation
@@ -114,9 +113,9 @@ Once you are comfortable using *PPiOS-Rename*, it can be easier to use if you in
 
 9. Rename the phase from `Run Script` to `Analyze Binary`.
 
-10. Expand the phase, and where it says `Type a script or ...`, paste the following script, adjusting for the correct path:
+10. Expand the phase, and replace the shell script comment that says `# Type a script or ...`, pasting the following script (adjusting for the correct path):
 
-        PATH="$PATH:$HOME/Downloads/PPiOS-Rename-v1.2.0"
+        PATH="$PATH:$HOME/Downloads/PPiOS-Rename-v1.3.0"
         [[ "$SDKROOT" == *iPhoneSimulator*.sdk* ]] && sdk="$SDKROOT"
         test -z "$sdk" && sdk="$CORRESPONDING_SIMULATOR_SDK_DIR"
         test -z "$sdk" && sdk="$CORRESPONDING_SIMULATOR_PLATFORM_DIR/Developer/SDKs/iPhoneSimulator${SDK_VERSION}.sdk"
@@ -137,9 +136,9 @@ Once you are comfortable using *PPiOS-Rename*, it can be easier to use if you in
 
 16. Add a script phase, and rename it to `Apply Renaming to Sources` (this should be the only real action for this target).
 
-17. Paste the following script, again adjusting for the correct path:
+17. Paste the following script (adjusting for the correct path):
 
-        PATH="$PATH:$HOME/Downloads/PPiOS-Rename-v1.2.0"
+        PATH="$PATH:$HOME/Downloads/PPiOS-Rename-v1.3.0"
         ppios-rename --obfuscate-sources
 
 18. <a name="renameApplyRenamingScheme"></a>Edit the scheme (or add one) for this new target, renaming the scheme to `Apply Renaming to <original-scheme-name>`.
@@ -163,44 +162,6 @@ When ready to start testing an obfuscated build:
 Once renaming has been applied to the sources, the process of building and testing for different destinations can be repeated using the original scheme (step #5), as long as you haven't reverted the sources yet (step #6).
 
 If you modify the original build target or scheme, be sure to delete and recreate the Build and Analyze target as above. Under certain conditions, the Apply Renaming target and scheme will need to be recreated as well.
-
-
-Using PPiOS-Rename with PPiOS-ControlFlow
------------------------------------------
-
-*PreEmptive Protection for iOS - Rename* (*PPiOS-Rename)* provides the "renaming" obfuscation, which is the most-common type of obfuscation typically applied to applications to help protect them from reverse engineering, intellectual property theft, software piracy, tampering, and data loss. There are additional obfuscation techniques, however, that are critically important for serious protection of apps. [PreEmptive Solutions](https://www.preemptive.com/) offers another product, [PreEmptive Protection for iOS - Control Flow](https://www.preemptive.com/products/ppios), that includes additional obfuscation transforms. *PPiOS-Rename* is meant to work alongside *PPiOS-ControlFlow*; together they provide much better protection than either one alone can provide.
-
-Simple instructions for using them together are available in the documentation for *PPiOS-ControlFlow*.
-
-
-Demonstration
--------------
-
-Below is a demonstration of the effects of applying obfuscation. The optimized binary was reverse engineered using [Hopper](http://www.hopperapp.com/) with no debugging symbols. This is a realistic example of what an attacker would see using reverse engineering tools.
-
-Original code:
-
-<img width="350" alt="original-sized" src="https://raw.githubusercontent.com/preemptive/PPiOS-Rename/master/images/original-sized.png">
-
-Reverse engineered code: (what an attacker would see)
-
-<img width="350" alt="unobfuscated-sized" src="https://raw.githubusercontent.com/preemptive/PPiOS-Rename/master/images/unobfuscated-sized.png">
-
-Reverse engineered code with PPiOS-Rename:
-
-<img width="350" alt="renamed-sized" src="https://raw.githubusercontent.com/preemptive/PPiOS-Rename/master/images/renamed-sized.png">
-
-Reverse engineered code with both *PPiOS-Rename* and *PPiOS-ControlFlow*:
-
-<img width="350" alt="controlflow-sized" src="https://raw.githubusercontent.com/preemptive/PPiOS-Rename/master/images/controlflow-sized.png">
-
-As seen, the code is relatively straightforward to understand with no obfuscation. It's not obvious after applying *PPiOS-Rename* obfuscation, but the logic could still be inferred by the system framework methods being used. And finally, it's extremely difficult to understand the logic in the last version with *PPiOS-ControlFlow* obfuscation. The decompiled code was actually significantly longer than shown here.
-
-
-Sample Project
---------------
-
-A sample project demonstrating the process of obfuscating an iOS app is available on GitHub: [PPiOS-Sample-Vie](https://github.com/preemptive/PPiOS-Sample-Vie). This project uses both *PPiOS-ControlFlow* and *PPiOS-Rename*, but can be used to examine their effects independently. All of the steps required to integrate *PPiOS* into an existing Xcode project have already been applied. The configuration has also been adjusted to ensure a positive user experience with the obfuscated app. Documentation for the project discusses in detail how to build and use the sample, how the project was configured, and how to interpret the build output.
 
 
 Troubleshooting
@@ -374,31 +335,27 @@ This error happens when `--analyze` is used on an already obfuscated binary. Thi
 Advanced Topics
 ---------------
 
-### Locating the Binary and dSYM Files.
+### Locating the Obfuscated Binary
 
-When looking to verify obfuscation or send de-obfuscated dSYMs to analytics services, you must first locate the binary and dSYM files.
+When looking to verify obfuscation, you must first locate the obfuscated binary.
 
 #### Xcode Archive
 
 If you created an archive, Xcode would have placed it in the *archives* directory, `~/Library/Developer/Xcode/Archives/{Date}/{AppName} {Date}, {Time}.xcarchive`. Inside there, you should find:
 
   * Binary: `Products/Applications/{AppName}.app/{AppName}`
-  * dSYM: `dSYMs/{AppName}.app.dSYM
-  >Note: If you have uploaded your archive to Apple's App Store it may have been recompiled from bitcode and you would need to download the new dSYM files from either <https://itunesconnect.apple.com> or by using the *Download dSYMS...* button in Xcode's *Organizer* window. The *Download dSYMS...* button will download a dSYM for each architecture to the same `dSYMs` in the *archives* directory, but it will be named `{SOME GUID}.dSYM`.
 
 #### .ipa File
 
 If you have an `{AppName}.ipa` file, you will need to extract it by running `unzip {AppName}.ipa`. Inside the `Payload` directory, you should find:
 
   * Binary: `{AppName}.app/{AppName}`
-  * dSYM: Is **not** included in the `.ipa` file.
 
 #### Command Line Build
 
 If you build from the command line (e.g. `xcodebuild`), this will typically create a `build` directory. Inside the `build` directory, you should find:
 
    * Binary: `Release-[iphoneos|iphonesimulator]/{AppName}.app/{AppName}`
-   * dSYM: `Release-[iphoneos|iphonesimulator]/{AppName}.app.dSYM`
 
 ### Verifying obfuscation
 
@@ -423,22 +380,6 @@ This will show the symbols from your app. If you do this with an unobfuscated bu
 
     ppios-rename --translate-crashdump --symbols-map path/to/symbols_x.y.z.map path/to/crashdump path/to/output
 
-### Reversing obfuscation in dSYMs
-
-It is possible to reverse the process of obfuscation in dSYMs by using a utility included with [PPiOS-ControlFlow](https://www.preemptive.com/products/ppios). The de-obfuscated dSYMs let you see the original names in automatic crash reporting tools such as HockeyApp, Crashlytics, Fabric, BugSense/Splunk Mint, or Crittercism. It does this by using the information from a map file (e.g. `symbols.map`) to generate a "reverse dSYM" file that has the non-obfuscated symbol names in it. For example:
-
-    /usr/local/share/preemptive/PPiOS/bin/llvm-dsymutil -ppios-map=path/to/symbols_x.y.z.map path/to/input.dSYM -o=path/to/output.dSYM
-
->Note: If you do not specify an output dSYM by passing the `-o` argument, the input dSYM **itself** will be altered by running the `llvm-dsymutil` command.
-
-The resulting dSYM file can be uploaded to e.g. HockeyApp.
-
-dSYMs use a binary format that must be interpreted correctly by `llvm-dsymutil`. Thus the version of `llvm-dsymutil` from *PPiOS-ControlFlow* must match the major version of Xcode used to produce the dSYMs. For example, `llvm-dsymutil` from *PPiOS-ControlFlow* version 2.5 can only be used with Xcode 8, the latest version of Xcode supported by this version of *PPiOS-ControlFlow*.
-
-Until Xcode 9 is supported by *PPiOS-ControlFlow*, dSYM translation is unavailable for apps or libraries built with Xcode 9.
-
-> DEVELOPER NOTE: The original `--translate-dsym` logic did not work properly with small symbol names nor when the obfuscated names were a different size than the originals. It has been replaced by a feature in *PPiOS-ControlFlow*.
-
 ### Analyzing Dynamic Frameworks
 
 Analyzing a dynamic framework is similar to analyzing an application, but will probably require many more filters. To start, use:
@@ -460,7 +401,7 @@ You then need to determine and use the proper filters. You will need to choose o
 
 ### Obfuscating Static Libraries
 
-Static libraries cannot be directly processed by *PPiOS-Rename*, but it is possible to work around the technical issue preventing direct processing. Although the initial setup is somewhat involved, once this is complete the build process is no more complicated than with *PPiOS-Rename* other projects. The basic idea is:
+Static libraries cannot be directly processed by *PPiOS-Rename*, but it is possible to work around the technical issue preventing direct processing. Although the initial setup is somewhat involved, once this is complete the build process is no more complicated than with other *PPiOS-Rename* projects. The basic idea is:
 
 1. Create a workspace to simplify interactions with the library.
 2. Create an app that uses the static library.
@@ -480,40 +421,42 @@ The procedure is as follows:
 
 2. From within the workspace, create a new project:
     1. In Xcode, go to `File` > `New` > `Project ...`.
-    2. Select `iOS`, and under the `Application` section select `Single View Application`.
-    3. When choosing the options, specify the `Product Name` as `WrappingApp`, and be sure to select Objective-C as the language.
-    4. Specify the directory to store the `WrappingApp` project as a sibling of the static library's project directory. These instructions expect a source tree layout like the following, with everything under `someParentDir` under source control:
+    2. Select `iOS`, then under the `Application` section select `Single View App`, and then select `Next`.
+    3. For the options: specify the `Product Name` as `WrappingApp` and be sure to select Objective-C as the language, then select `Next`.
+    4. Create the project:
+        1. Specify the directory to store the `WrappingApp` project as a sibling of the static library's project directory. These instructions expect a source tree layout like the following, with everything under `someParentDir` under source control:
 
-            someParentDir/StaticLib/StaticLib.xcodeproj
-            someParentDir/LibWorkspace.xcworkspace
-            someParentDir/WrappingApp/WrappingApp.xcodeproj
+                someParentDir/StaticLib/StaticLib.xcodeproj
+                someParentDir/LibWorkspace.xcworkspace
+                someParentDir/WrappingApp/WrappingApp.xcodeproj
 
-    5. At the bottom of this dialog, specify `Add to:` the `LibWorkspace` workspace, and select `Create`.
-    6. Select the WrappingApp target, then clean and build the project to verify that the project builds.
-    7. Go to the Project Navigator, select the `WrappingApp` project, and select the `WrappingApp` target.
-    8. Select `General`, scroll to the bottom, and select the `+` to add to the list of `Linked Frameworks and Libraries`.
-    9. Add `libStaticLib.a`. This should appear under the `Workspace` section in the dialog. You may need to close and reopen `LibWorkspace` after adding `StaticLib` in order to get it to appear correctly.
-    10. Select `Build Settings`, search for `other linker`, and set `Other Linker Flags` to include `-ObjC`.
-    11. Clean and build again to verify that the workspace builds correctly. It should build the static library first and then the app.
+        2. At the bottom of the dialog, specify `Add to:` the `LibWorkspace` workspace.
+        3. Select `Create`.
+
+    5. Select the WrappingApp target, then `Product` > `Build` to verify that the project builds.
+    6. Go to the Project Navigator, select the `WrappingApp` project, and select the `WrappingApp` target.
+    7. Select `General`, scroll to the bottom, and select the `+` to add to the list of `Linked Frameworks and Libraries`.
+    8. Add `libStaticLib.a`.
+    9. Select `Build Settings`, search for `other linker`, and set `Other Linker Flags` to include `-ObjC`.
+    10. Select `Product` > `Clean Build Folder` and build again to verify that the workspace builds correctly. It should build the static library first and then the app.
 
 3. Setup *PPiOS-Rename* to analyze the app:
     1. Follow instructions [5-12 in `Project Setup` above](#configureAnalyze), but apply them to `WrappingApp`, rather than the static library, and modify the original `WrappingApp` target. Duplication of the target is unnecessary.
-    2. You may need to close and re-open the workspace to get Xcode to use the correct target name in the report navigator.
-    3. <a name="countUniqueSymbols"></a>Clean and build the `Build and Analyze WrappingApp` target.
-    4. Review the build log in the report navigator and look for the number of `Generated unique symbols`. This number should include all of the public and all of the non-public symbols from `StaticLib`. This will also include a small number of symbols from classes in the app itself. These should be benign, but can be excluded manually if necessary.
-    5. Create a list of public types for the static library named `public-types.list`. Either create the list using the following procedure, or create the list manually. The procedure requires that the names of the public header files match the names of the types, or follow `AffectedType+CategoryName.h` convention.
+    2. <a name="countUniqueSymbols"></a>Clean and build the `Build and Analyze WrappingApp` target.
+    3. Review the build log in the report navigator and look for the number of `Generated unique symbols`. This number should include all of the public and all of the non-public symbols from `StaticLib`. This will also include a small number of symbols from classes in the app itself. Symbols from the app should be benign, but can be excluded manually if necessary.
+    4. Create a list of public types for the static library named `public-types.list`. Either create the list using the following procedure, or create the list manually. The procedure requires that the names of the public header files match the names of the types, or follow the `AffectedType+CategoryName.h` convention.
         1. Go to the Report Navigator, review the log for a build of `StaticLib`, select a copy file task for one of the header files, right-click and `Copy`.
         2. Paste the result in a text editor.
         3. Select and copy the build output path. This should have the form: `<products-directory>/include/StaticLib`, and contain the string `/DerivedData/`.
         4. At a command line, run the following commands, from `someParentDir`:
 
-                # Replace ".../include/StaticLib" with the path
+                # Replace ".../include/StaticLib" with the build output path
                 # Replace "StaticLib" with the name of the umbrella header
                 ls ".../include/StaticLib" | sed 's/.*+//' | sed 's/[.]h$//' | grep -v StaticLib > public-types.list
                 # Or omit the grep -v part if you have no umbrella header
                 ls ".../include/StaticLib" | sed 's/.*+//' | sed 's/[.]h$//' > public-types.list
                 # verify the contents
-                head public-types.list
+                less public-types.list
                 # SLAPublicClass
                 # SLProtocolForSomething
                 # SLSomeCategory
@@ -521,9 +464,9 @@ The procedure is as follows:
 
     >Note: This is an additional point of maintenance: as types are added to or removed from the public API of the library, the `public-types.list` will need to be updated accordingly.
 
-    6. Replace the analyze script (`Analyze Binary` run script phase) with the following to exclude the public types from renaming:
+    5. Replace the analyze script (`Analyze Binary` run script phase) with the following to exclude the public types from renaming:
 
-            PATH="$PATH:$HOME/Downloads/PPiOS-Rename-v1.2.0"
+            PATH="$PATH:$HOME/Downloads/PPiOS-Rename-v1.3.0"
             [[ "$SDKROOT" == *iPhoneSimulator*.sdk* ]] && sdk="$SDKROOT"
             test -z "$sdk" && sdk="$CORRESPONDING_SIMULATOR_SDK_DIR"
             test -z "$sdk" && sdk="$CORRESPONDING_SIMULATOR_PLATFORM_DIR/Developer/SDKs/iPhoneSimulator${SDK_VERSION}.sdk"
@@ -531,16 +474,19 @@ The procedure is as follows:
                 $(for each in $(cat ../public-types.list) ; do printf -- '-F !%s ' "$each" ; done) \
                 "$BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH"
 
-    7. Repeat steps [3.iii - 3.iv](#countUniqueSymbols). The number of unique symbols should decrease, but still be significant. This should be the count of all of the non-public symbols (non-public symbols for which there are not public symbols with the same name).
-    8. Review the list of types that will be renamed by executing the following at a command line (assuming all of the type names are prefixed with the two letters `SL`):
+    6. Repeat steps [3.ii - 3.iii](#countUniqueSymbols). The number of unique symbols should decrease, but still be significant. This should be the count of all of the non-public symbols (non-public symbols for which there are not public symbols with the same name).
+    7. Review the list of types that will be renamed by executing the following at a command line, from `someParentDir` (assumes all of the type names are prefixed with the two letters `SL`):
 
             cat WrappingApp/symbols.map | awk '{print $3}' | sed 's/[",]//g' | grep '^SL' > renamed-types.txt
+            less renamed-types.txt
+
+    8. Adjust `public-types.list` as necessary to ensure that all public types are not renamed.
 
 4. Modify the static library project to apply the renaming:
-    1. Follow instructions [13-16 in `Project Setup` above](#configureRenaming), applying them to the static library target.
+    1. Follow instructions [13-16 in `Project Setup` above](#configureRenaming), applying them to the `StaticLib` target (duplicating the target this time).
     2. The call to `ppios-rename` needs to reference the `symbols.map` file from the WrappingApp project, using the `--symbols-map` option. Use this script for the new Run Script phase (adjusting the path as necessary):
 
-            PATH="$PATH:$HOME/Downloads/PPiOS-Rename-v1.2.0"
+            PATH="$PATH:$HOME/Downloads/PPiOS-Rename-v1.3.0"
             ppios-rename --obfuscate-sources --symbols-map ../WrappingApp/symbols.map
 
     3. Follow instruction [18 in `Project Setup` above](#renameApplyRenamingScheme).
@@ -595,4 +541,4 @@ ppios-rename --help
 ```
 
 ---------------------------------------------------------------------
-Copyright 2016-2017 PreEmptive Solutions, LLC
+Copyright 2016-2018 PreEmptive Solutions, LLC

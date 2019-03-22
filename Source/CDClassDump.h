@@ -1,7 +1,7 @@
 // -*- mode: ObjC -*-
 
 /*************************************************
-  Copyright 2016-2017 PreEmptive Solutions, LLC
+  Copyright 2016-2018 PreEmptive Solutions, LLC
   See LICENSE.txt for licensing information
 *************************************************/
   
@@ -39,7 +39,7 @@
 @property (readonly) CDTypeController *typeController;
 
 - (BOOL)loadFile:(CDFile *)file error:(NSError **)error depth:(int)depth;
-- (void)processObjectiveCData;
+- (int)processObjectiveCData;
 
 - (void)recursivelyVisit:(CDVisitor *)visitor;
 

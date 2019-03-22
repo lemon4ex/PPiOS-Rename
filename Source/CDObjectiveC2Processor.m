@@ -1,5 +1,10 @@
 // -*- mode: ObjC -*-
 
+/********************************************
+  Copyright 2018 PreEmptive Solutions, LLC
+  See LICENSE.txt for licensing information
+********************************************/
+
 //  This file is part of class-dump, a utility for examining the Objective-C segment of Mach-O files.
 //  Copyright (C) 1997-1998, 2000-2001, 2004-2015 Steve Nygard.
 
@@ -34,7 +39,7 @@
         [self protocolAtAddress:[cursor readPtr]];
 }
 
-- (void)loadClasses;
+- (int)loadClasses;
 {
     CDSection *section = [[self.machOFile dataConstSegment] sectionWithName:@"__objc_classlist"];
     
@@ -43,9 +48,15 @@
         uint64_t val = [cursor readPtr];
         CDOCClass *aClass = [self loadClassAtAddress:val];
         if (aClass != nil) {
+            if (aClass.isSwiftClass) {
+                NSLog(@"Error: PPiOS-Rename cannot process apps containing Swift code: %@", aClass.name);
+                return 1;
+            }
             [self addClass:aClass withAddress:val];
         }
     }
+
+    return 0;
 }
 
 - (void)loadCategories;
@@ -218,7 +229,11 @@
     objc2Class.superclass = [cursor readPtr];
     objc2Class.cache      = [cursor readPtr];
     objc2Class.vtable     = [cursor readPtr];
-    objc2Class.data       = [cursor readPtr];
+
+    uint64_t value        = [cursor readPtr];
+    BOOL isSwiftClass = (value & 0x1) != 0;
+    objc2Class.data       = value & ~7;
+
     objc2Class.reserved1  = [cursor readPtr];
     objc2Class.reserved2  = [cursor readPtr];
     objc2Class.reserved3  = [cursor readPtr];
@@ -254,6 +269,7 @@
     
     CDOCClass *aClass = [[CDOCClass alloc] init];
     [aClass setName:str];
+    aClass.isSwiftClass = isSwiftClass;
     
     for (CDOCMethod *method in [self loadMethodsAtAddress:objc2ClassData.baseMethods])
         [aClass addInstanceMethod:method];

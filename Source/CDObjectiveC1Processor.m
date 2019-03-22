@@ -1,9 +1,9 @@
 // -*- mode: ObjC -*-
 
-/********************************************
-  Copyright 2016 PreEmptive Solutions, LLC
+/*************************************************
+  Copyright 2016-2018 PreEmptive Solutions, LLC
   See LICENSE.txt for licensing information
-********************************************/
+*************************************************/
   
 //  This file is part of class-dump, a utility for examining the Objective-C segment of Mach-O files.
 //  Copyright (C) 1997-1998, 2000-2001, 2004-2015 Steve Nygard.
@@ -150,13 +150,18 @@ static BOOL debug = NO;
 
 #pragma mark -
 
-- (void)process;
+- (int)process;
 {
     if ([self.machOFile isEncrypted] == NO && [self.machOFile canDecryptAllSegments]) {
-        [super process];
+        int result = [super process];
+        if (result != 0) {
+            return result;
+        }
 
         [self processModules];
     }
+    
+    return 0;
 }
 
 #pragma mark - Formerly private
